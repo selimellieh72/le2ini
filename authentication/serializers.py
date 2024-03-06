@@ -1,4 +1,4 @@
-from .models import User
+from .models import User, UserInfo
 from rest_framework import serializers
 
 class UserSerializer(serializers.ModelSerializer):
@@ -10,3 +10,10 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
+
+
+
+class UserInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserInfo
+        fields = ['full_name', 'date_of_birth', 'occupation', 'biography']

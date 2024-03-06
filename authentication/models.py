@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils.translation import gettext_lazy as _
 
@@ -28,3 +29,15 @@ class User(AbstractBaseUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
+
+
+
+class UserInfo(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='info')
+    full_name = models.CharField(max_length=100)
+    date_of_birth = models.DateField()
+    occupation = models.CharField(max_length=100)
+    biography = models.CharField(max_length =256)
+
+    def __str__(self):
+        return self.user.email
