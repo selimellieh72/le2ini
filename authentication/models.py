@@ -3,6 +3,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils.translation import gettext_lazy as _
+from meetup.models import Interest
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -17,13 +18,17 @@ class UserManager(BaseUserManager):
     def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_active', True)
 
         return self.create_user(email, password, **extra_fields)
 
-class User(AbstractBaseUser):
+class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
+
+    verification_code = models.CharField(max_length=6, blank=True, null=True)
+    code_sent_at = models.DateTimeField(null=True, blank=True)
 
     objects = UserManager()
 
@@ -38,6 +43,7 @@ class UserInfo(models.Model):
     date_of_birth = models.DateField()
     occupation = models.CharField(max_length=100)
     biography = models.CharField(max_length =256)
+    interests = models.ManyToManyField(Interest, related_name='users', blank=True)
 
     def __str__(self):
         return self.user.email

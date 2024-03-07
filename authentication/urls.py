@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegisterUserView, UserInfoView
+from .views import RegisterUserView, UserInfoView, VerifyEmailView
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -10,4 +10,5 @@ urlpatterns = [
     path('userinfo/<int:user_id>/', UserInfoView.as_view(), name='user-info'),
     path('userinfo/', UserInfoView.as_view(), name='userinfo-self'),
     path('userinfo/<int:user_id>/', UserInfoView.as_view(), name='userinfo-specific'),
+     path('verify-email/', VerifyEmailView.as_view(), name='verify-email')
 ]

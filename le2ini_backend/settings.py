@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'meetup',
     'authentication',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -130,3 +131,5 @@ REST_FRAMEWORK = {
     ),
 }
 AUTH_USER_MODEL = "authentication.User"
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

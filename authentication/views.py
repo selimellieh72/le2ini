@@ -5,14 +5,16 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .models import User, UserInfo
 from .serializers import UserSerializer, UserInfoSerializer
-from .models import UserInfo
+from django.utils import timezone
+from .utils import send_verification_email
 
 class RegisterUserView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            return Response({"user": serializer.data}, status=status.HTTP_201_CREATED)
+            send_verification_email(user)
+            return Response({"user": serializer.data,  "detail": "Check your email for the verification code."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -46,3 +48,21 @@ class UserInfoView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class VerifyEmailView(APIView):
+
+    def post(self, request):
+        email = request.data.get('email')
+        code = request.data.get('code')
+        try:
+            user = User.objects.get(email=email, verification_code=code)
+        except User.DoesNotExist:
+            return Response({"error": "Invalid email or verification code."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if timezone.now() - user.code_sent_at <= timezone.timedelta(minutes=30):  # 30 minutes validity
+            user.is_active = True
+            user.verification_code = None
+            user.save()
+            return Response({"success": "Email verified successfully."})
+        else:
+            return Response({"error": "Verification code has expired."}, status=status.HTTP_400_BAD_REQUEST)
