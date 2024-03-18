@@ -66,3 +66,11 @@ class VerifyEmailView(APIView):
             return Response({"success": "Email verified successfully."})
         else:
             return Response({"error": "Verification code has expired."}, status=status.HTTP_400_BAD_REQUEST)
+
+class LookupUsersView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        last_50_users = User.objects.order_by('-last_login')[:50]
+        serializer = UserSerializer(last_50_users, many=True)
+        return Response(serializer.data)
