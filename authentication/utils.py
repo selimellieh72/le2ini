@@ -5,7 +5,7 @@ from django.core.mail import send_mail
 from django.utils import timezone
 
 def generate_verification_code(size=4):
-    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=size))
+    return ''.join(random.choices( string.digits, k=size))
 
 def send_verification_email(user):
     user.verification_code = generate_verification_code()
