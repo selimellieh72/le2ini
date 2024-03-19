@@ -8,6 +8,7 @@ from .serializers import UserSerializer, UserInfoSerializer
 from django.utils import timezone
 from django.contrib.auth import authenticate
 from .utils import send_verification_email
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class RegisterUserView(APIView):
     def post(self, request):
@@ -54,7 +55,7 @@ class UserInfoView(APIView):
                 serializer = UserInfoSerializer(data=mutable_data)
                 if serializer.is_valid():
                     serializer.save(user=user)
-                    return Response({**serializer.data, email: email, password: password}, status=status.HTTP_201_CREATED)
+                    return Response({**serializer.data, "email": email, "password": password}, status=status.HTTP_201_CREATED)
                
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             else:
@@ -75,6 +76,7 @@ class VerifyEmailView(APIView):
     def post(self, request):
         email = request.data.get('email')
         code = request.data.get('code')
+        password = request.data.get('password')
         try:
             user = User.objects.get(email=email, verification_code=code)
         except User.DoesNotExist:
@@ -84,7 +86,18 @@ class VerifyEmailView(APIView):
             user.is_active = True
             user.verification_code = None
             user.save()
-            return Response({"success": "Email verified successfully."})
+         
+
+
+            token_serializer = TokenObtainPairSerializer(data={'email': email, 'password': password})
+
+            if token_serializer.is_valid():
+                return Response({
+                    'access': token_serializer.validated_data.get('access'),
+                    'refresh': token_serializer.validated_data.get('refresh'),
+                    'success': "Email verified successfully."
+                })
+            return Response({"ok": "ok"})
         else:
             return Response({"error": "Verification code has expired."}, status=status.HTTP_400_BAD_REQUEST)
 
