@@ -1,3 +1,4 @@
+from meetup.serializers import InterestSerializer
 from .models import User, UserInfo
 from meetup.models import Interest
 from rest_framework import serializers
@@ -9,7 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ( 'email', 'password', 'user_info')
+        fields = ( 'id', 'email', 'password', 'user_info')
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
@@ -23,9 +24,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserInfoSerializer(serializers.ModelSerializer):
-    interests = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Interest.objects.all(), required=False
-    )
+    interests = InterestSerializer(many=True, read_only=True)
+
 
     class Meta:
         model = UserInfo
@@ -34,11 +34,18 @@ class UserInfoSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         interests_data = validated_data.pop('interests', [])
         user_info = UserInfo.objects.create(**validated_data)
-        user_info.interests.set(interests_data)
+        for interest_data in interests_data:
+            interest, _ = Interest.objects.get_or_create(**interest_data)
+            user_info.interests.add(interest)
         return user_info
 
     def update(self, instance, validated_data):
         interests_data = validated_data.pop('interests', [])
         instance = super().update(instance, validated_data)
-        instance.interests.set(interests_data)
+
+        # Clear existing interests and add the new ones
+        instance.interests.clear()
+        for interest_data in interests_data:
+            interest, _ = Interest.objects.get_or_create(**interest_data)
+            instance.interests.add(interest)
         return instance

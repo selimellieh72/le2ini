@@ -17,7 +17,7 @@ class RegisterUserView(APIView):
             user = serializer.save()
             send_verification_email(user)
             return Response({"user": serializer.data,  "detail": "Check your email for the verification code."}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "Email or password incorrect. Try again later."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserInfoView(APIView):
@@ -30,6 +30,17 @@ class UserInfoView(APIView):
             return  [AllowAny()]
         else:
             return [IsAuthenticated()]
+
+    def get(self, request, user_id=None):
+      
+        # If no user_id is provided, default to the current user's UserInfo
+        if user_id is None:
+            userinfo = get_object_or_404(UserInfo, user=request.user)
+        else:
+            # Fetch the UserInfo for the given user_id
+            userinfo = get_object_or_404(UserInfo, user__id=user_id)
+        serializer = UserInfoSerializer(userinfo)
+        return Response(serializer.data)
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
@@ -89,7 +100,8 @@ class VerifyEmailView(APIView):
          
 
 
-            token_serializer = TokenObtainPairSerializer(data={'email': email, 'password': password})
+            token_serializer = TokenObtainPairSerializer(data={'email': email, 'password': password
+                                                               })
 
             if token_serializer.is_valid():
                 return Response({

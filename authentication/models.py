@@ -2,9 +2,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-from django.utils.translation import gettext_lazy as _
-from meetup.models import Interest
-
+from django.utils.translation import gettext_lazy as _c
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -43,7 +41,7 @@ class UserInfo(models.Model):
     date_of_birth = models.DateField(blank=True, null=True)
     occupation = models.CharField(max_length=100, blank=True)
     biography = models.CharField(max_length =256, blank=True)
-    interests = models.ManyToManyField(Interest, related_name='users', blank=True)
+    interests = models.ManyToManyField('meetup.Interest', related_name='users', blank=True)
 
     def __str__(self):
         return self.user.email
