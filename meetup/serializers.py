@@ -63,3 +63,19 @@ class MeetingRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = MeetingRequest
         fields = ['id', 'request_from', 'request_to', 'status', 'place_time_requests', 'request_from_accepting', 'request_to_accepting']
+    def to_representation(self, instance):
+        # Dynamically import the UserSerializer to avoid circular imports
+        from authentication.serializers import UserSerializer  # Adjust the import path as necessary
+        
+        # Use the parent method to get the default serialized data
+        ret = super().to_representation(instance)
+        
+        # Replace the PK with serialized data for read operations
+        ret['request_from'] = UserSerializer(instance.request_from).data
+        ret['request_to'] = UserSerializer(instance.request_to).data
+        
+        return ret
+
+    def to_internal_value(self, data):
+        # This ensures that for write operations, the expected format is a PK
+        return super().to_internal_value(data)    

@@ -44,7 +44,7 @@ class UserInfoView(APIView):
             # Fetch the UserInfo for the given user_id
             userinfo = get_object_or_404(UserInfo, user__id=user_id)
         serializer = UserInfoSerializer(userinfo)
-        return Response({**serializer.data, 'id': userinfo.user.id})
+        return Response({**serializer.data, 'id': userinfo.user.id, 'email': userinfo.user.email})
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')

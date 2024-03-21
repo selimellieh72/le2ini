@@ -31,7 +31,7 @@ class CreateMeetingRequestView(APIView):
         serializer = MeetingRequestSerializer(data={"request_from": request.user.pk, "request_to":user_id })
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response({'message': 'Successfully sent request', 'meeting_request': serializer.data}, status=status.HTTP_201_CREATED)
         # Return error message if the serializer is not valid
         return Response({'message': "Cannot send request at this time"}, status=status.HTTP_400_BAD_REQUEST)
 class RespondToMeetingRequestView(APIView):
