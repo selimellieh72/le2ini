@@ -1,5 +1,6 @@
 from .models import MeetingRequest, TimeSlot, PlaceRequest, Place, Interest
-from django.contrib.auth.models import User
+from authentication.models import User
+
 from rest_framework import serializers
 
 
@@ -15,9 +16,14 @@ class TimeSlotSerializer(serializers.ModelSerializer):
         model = TimeSlot
         fields = ['id', 'meeting_request', 'slot', 'requested_by', 'requested_at']
 
+class PlaceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Place
+        fields = '__all__'
+
 class PlaceRequestSerializer(serializers.ModelSerializer):
     place_name = serializers.CharField(write_only=True, required=False)
-
+    place = PlaceSerializer(read_only=True)
     class Meta:
         model = PlaceRequest
         fields = ['id', 'meeting_request', 'place', 'requested_by', 'requested_at', 'place_name']
@@ -33,9 +39,28 @@ class PlaceRequestSerializer(serializers.ModelSerializer):
 
 # Serializer for creating and updating meeting requests
 class MeetingRequestSerializer(serializers.ModelSerializer):
-    time_slots = TimeSlotSerializer(many=True, read_only=True, required=False)
-    place_requests = PlaceRequestSerializer(many=True, read_only=True, required=False)
 
+    time_slots = serializers.SerializerMethodField()
+    place_requests = serializers.SerializerMethodField()
+    request_from = serializers.SerializerMethodField()
+    request_to = serializers.SerializerMethodField()
+    def get_request_from(self, obj):
+        # Local import to avoid circular import
+        from authentication.serializers import UserSerializer
+        return UserSerializer(obj.request_from).data
+
+    def get_request_to(self, obj):
+        # Local import to avoid circular import
+        from authentication.serializers import UserSerializer
+        return UserSerializer(obj.request_to).data
+    def get_time_slots(self, obj):
+        queryset = obj.time_slots.all().order_by('-requested_at')
+        return TimeSlotSerializer(queryset, many=True).data
+
+    def get_place_requests(self, obj):
+        # Assuming you have a PlaceRequestSerializer defined elsewhere
+        queryset = obj.place_requests.all().order_by('-requested_at')
+        return PlaceRequestSerializer(queryset, many=True).data
 
     class Meta:
         model = MeetingRequest

@@ -40,7 +40,7 @@ class UserInfoView(APIView):
             # Fetch the UserInfo for the given user_id
             userinfo = get_object_or_404(UserInfo, user__id=user_id)
         serializer = UserInfoSerializer(userinfo)
-        return Response(serializer.data)
+        return Response({**serializer.data, 'id': userinfo.user.id})
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
@@ -66,7 +66,7 @@ class UserInfoView(APIView):
                 serializer = UserInfoSerializer(data=mutable_data)
                 if serializer.is_valid():
                     serializer.save(user=user)
-                    return Response({**serializer.data, "email": email, "password": password}, status=status.HTTP_201_CREATED)
+                    return Response({**serializer.data, "email": email, "password": password , 'id': user.id}, status=status.HTTP_201_CREATED)
                
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             else:

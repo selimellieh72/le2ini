@@ -2,7 +2,7 @@ from meetup.serializers import InterestSerializer
 from .models import User, UserInfo
 from meetup.models import Interest
 from rest_framework import serializers
-
+from rest_framework.fields import ListField
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -25,14 +25,16 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserInfoSerializer(serializers.ModelSerializer):
     interests = InterestSerializer(many=True, read_only=True)
+    interests_data = ListField(child=serializers.DictField(), write_only=True)
+    
 
 
     class Meta:
         model = UserInfo
-        fields = ['full_name', 'date_of_birth', 'occupation', 'biography', 'interests']
+        fields = ['full_name', 'date_of_birth', 'occupation', 'biography', 'interests', 'interests_data']
 
     def create(self, validated_data):
-        interests_data = validated_data.pop('interests', [])
+        interests_data = validated_data.pop('interests_data', [])
         user_info = UserInfo.objects.create(**validated_data)
         for interest_data in interests_data:
             interest, _ = Interest.objects.get_or_create(**interest_data)
@@ -40,8 +42,9 @@ class UserInfoSerializer(serializers.ModelSerializer):
         return user_info
 
     def update(self, instance, validated_data):
-        interests_data = validated_data.pop('interests', [])
+        interests_data = validated_data.pop('interests_data', [])
         instance = super().update(instance, validated_data)
+        print(validated_data)
 
         # Clear existing interests and add the new ones
         instance.interests.clear()
@@ -49,3 +52,4 @@ class UserInfoSerializer(serializers.ModelSerializer):
             interest, _ = Interest.objects.get_or_create(**interest_data)
             instance.interests.add(interest)
         return instance
+
