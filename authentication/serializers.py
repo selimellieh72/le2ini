@@ -25,7 +25,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserInfoSerializer(serializers.ModelSerializer):
     interests = InterestSerializer(many=True, read_only=True)
-    interests_data = ListField(child=serializers.DictField(), write_only=True)
+    interests_data = ListField(child=serializers.DictField(), write_only=True, required=False)
     
 
 

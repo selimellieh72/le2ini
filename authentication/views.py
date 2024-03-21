@@ -58,28 +58,27 @@ class UserInfoView(APIView):
         # Check if the password is correct
         if user.check_password(password):
             # Proceed if the user is not active (assuming they are unverified)
-            if not user.is_active:
-                if UserInfo.objects.filter(user=user).exists():
-                    return Response({"detail": "UserInfo already exists. Please verify your email to update your info."}, status=status.HTTP_400_BAD_REQUEST)
+        
+            if UserInfo.objects.filter(user=user).exists():
+                return Response({"detail": "UserInfo already exists. Please verify your email to update your info."}, status=status.HTTP_400_BAD_REQUEST)
 
-                # Exclude email and password from the serializer data
-                mutable_data = request.data.copy()
-                mutable_data.pop('email', None)
-                mutable_data.pop('password', None)
+            # Exclude email and password from the serializer data
+            mutable_data = request.data.copy()
+            mutable_data.pop('email', None)
+            mutable_data.pop('password', None)
 
-                serializer = UserInfoSerializer(data=mutable_data)
-                if serializer.is_valid():
-                    serializer.save(user=user)
-                    return Response({**serializer.data, "email": email, "password": password , 'id': user.id}, status=status.HTTP_201_CREATED)
-               
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response({"message": "Verified users should not use this method."}, status=status.HTTP_400_BAD_REQUEST)
+            serializer = UserInfoSerializer(data=mutable_data)
+            if serializer.is_valid():
+                serializer.save(user=user)
+                return Response({**serializer.data, "email": email, "password": password , 'id': user.id}, status=status.HTTP_201_CREATED)
+            
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
         else:
             return Response({"message": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
         
     def patch(self, request):
-        userinfo = get_object_or_404(UserInfo, user=request.user)  # Ensure it's the user's own UserInfo
+        userinfo =  get_object_or_404(UserInfo, user=request.user)  # Ensure it's the user's own UserInfo
         serializer = UserInfoSerializer(userinfo, data=request.data, partial=True)  # Allow partial updates
         if serializer.is_valid():
             serializer.save()
