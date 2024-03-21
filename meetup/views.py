@@ -2,16 +2,17 @@ from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import MeetingRequest, TimeSlot, PlaceRequest, Interest
-from .serializers import MeetingRequestSerializer, TimeSlotSerializer, PlaceRequestSerializer,InterestSerializer
+from .models import MeetingRequest, TimeSlot, PlaceTimeRequest, Interest
+from .serializers import MeetingRequestSerializer, PlaceTimeRequestSerializer,InterestSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 
 # helpers
-def reset_acceptance(meeting_request):
-    meeting_request.request_from_accepting = False
-    meeting_request.request_to_accepting = False
+def reset_acceptance(meeting_request, user_id):
+    meeting_request.request_from_accepting = meeting_request.request_from.pk == user_id
+
+    meeting_request.request_to_accepting = meeting_request.request_to.pk == user_id
     meeting_request.status = 'waiting'
     meeting_request.save()
 
@@ -26,12 +27,13 @@ class CreateMeetingRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, user_id):
+        print({"request_from": request.user.pk, "request_to":user_id })
         serializer = MeetingRequestSerializer(data={"request_from": request.user.pk, "request_to":user_id })
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        # Return error message if the serializer is not valid
+        return Response({'message': "Cannot send request at this time"}, status=status.HTTP_400_BAD_REQUEST)
 class RespondToMeetingRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -67,25 +69,7 @@ class RespondToMeetingRequestView(APIView):
         meeting_request.save()
         return Response({'status': meeting_request.status, 'message': response_message}, status=status.HTTP_200_OK)
 
-class TimeSlotRequestView(APIView):
-    permission_classes = [IsAuthenticated]
 
-    def post(self, request, meeting_request_id):
-        meeting_request = get_object_or_404(MeetingRequest, pk=meeting_request_id)
-        if request.user not in [meeting_request.request_from, meeting_request.request_to] or meeting_request.status != 'waiting':
-            return Response({'message': 'You cannot make this request at this time.'}, status=status.HTTP_403_FORBIDDEN)
-
-        serializer = TimeSlotSerializer(data={'meeting_request': meeting_request_id, 'slot': request.data['slot'], 'requested_by': request.user.pk})
-        if serializer.is_valid():
-            # Ensure the time slot has not been previously requested
-            if TimeSlot.objects.filter(meeting_request=meeting_request, slot=serializer.validated_data['slot']).exists():
-                return Response({'message': 'This time slot has already been requested.'}, status=status.HTTP_400_BAD_REQUEST)
-            reset_acceptance(meeting_request)
-            serializer.save(requested_by=request.user, meeting_request=meeting_request)
-            
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 class MeetingRequestDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -100,28 +84,35 @@ class MeetingRequestDetailView(APIView):
         serializer = MeetingRequestSerializer(meeting_request)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-class PlaceRequestView(APIView):
+class PlaceTimeRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, meeting_request_id):
-        meeting_request = get_object_or_404(MeetingRequest, pk=meeting_request_id)
+        
+        meeting_request = MeetingRequest.objects.filter(pk=meeting_request_id).first()
+
+        if meeting_request is None:
+            return Response({'message': 'Meeting request not found.'}, status=status.HTTP_404_NOT_FOUND)
+   
         # Check if the user is part of the meeting and if the status is 'waiting'
         if request.user not in [meeting_request.request_from, meeting_request.request_to] or meeting_request.status != 'waiting':
             return Response({'message': 'You cannot make this request at this time.'}, status=status.HTTP_403_FORBIDDEN)
-
-        serializer = PlaceRequestSerializer(data={'requested_by': request.user.pk, 'meeting_request': meeting_request_id, 'place_name': request.data['place_name'] })
+   
+        serializer = PlaceTimeRequestSerializer(data={'requested_by': request.user.pk, 'meeting_request': meeting_request_id, 'place_name': request.data['place_name'], 'time_slot': request.data['time_slot'] })
         if serializer.is_valid():
-            reset_acceptance(meeting_request)
-            serializer.save(requested_by=request.user, meeting_request=meeting_request)
+            
+            reset_acceptance(meeting_request, request.user.pk)
+         
+            serializer.save()
+           
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
+        return Response({'message': 'Invalid data.'}, status=status.HTTP_400_BAD_REQUEST)
+       
 class MeetingRequestsForUserView(ListAPIView):
     serializer_class = MeetingRequestSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         # Return meeting requests where the authenticated user is the target
-        return MeetingRequest.objects.filter(Q(request_to=self.request.user) | Q(request_from=self.request.user)).prefetch_related('time_slots', 'place_requests')
+        return MeetingRequest.objects.filter(Q(request_to=self.request.user) | Q(request_from=self.request.user)).prefetch_related('place_time_requests')

@@ -16,7 +16,11 @@ class RegisterUserView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             send_verification_email(user)
-            return Response({"user": serializer.data,  "detail": "Check your email for the verification code."}, status=status.HTTP_201_CREATED)
+            return Response({"user": serializer.data,  "message": "Check your email for the verification code."}, status=status.HTTP_201_CREATED)
+        
+        # Check if the email is already taken
+        if 'email' in serializer.errors:
+            return Response({"message": "Email already taken."}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"message": "Email or password incorrect. Try again later."}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -49,7 +53,7 @@ class UserInfoView(APIView):
             # Retrieve the user by email
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            return Response({"detail": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
 
         # Check if the password is correct
         if user.check_password(password):
@@ -70,9 +74,9 @@ class UserInfoView(APIView):
                
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             else:
-                return Response({"detail": "Verified users should not use this method."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message": "Verified users should not use this method."}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({"detail": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
         
     def patch(self, request):
         userinfo = get_object_or_404(UserInfo, user=request.user)  # Ensure it's the user's own UserInfo
@@ -91,7 +95,7 @@ class VerifyEmailView(APIView):
         try:
             user = User.objects.get(email=email, verification_code=code)
         except User.DoesNotExist:
-            return Response({"error": "Invalid email or verification code."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "Invalid email or verification code."}, status=status.HTTP_400_BAD_REQUEST)
 
         if timezone.now() - user.code_sent_at <= timezone.timedelta(minutes=30):  # 30 minutes validity
             user.is_active = True
@@ -107,7 +111,7 @@ class VerifyEmailView(APIView):
                 return Response({
                     'access': token_serializer.validated_data.get('access'),
                     'refresh': token_serializer.validated_data.get('refresh'),
-                    'success': "Email verified successfully."
+                    'message': "Email verified successfully."
                 })
             return Response({"ok": "ok"})
         else:

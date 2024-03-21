@@ -49,16 +49,18 @@ class TimeSlot(models.Model):
     ('17:30', '17:30 - 18:00'),
     ('18:00', '18:00 - 18:30'),
     ]
-    meeting_request = models.ForeignKey(MeetingRequest, related_name='time_slots', on_delete=models.CASCADE)
+    # meeting_request = models.ForeignKey(MeetingRequest, related_name='time_slots', on_delete=models.CASCADE)
     slot = models.CharField(max_length=5, choices=TIME_SLOTS)
-    requested_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    requested_at = models.DateTimeField(auto_now_add=True)
+    # requested_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    # requested_at = models.DateTimeField(auto_now_add=True)
 
 class Place(models.Model):
     name = models.CharField(max_length=255)
 
-class PlaceRequest(models.Model):
-    meeting_request = models.ForeignKey(MeetingRequest, related_name='place_requests', on_delete=models.CASCADE)
+class PlaceTimeRequest(models.Model):
+    meeting_request = models.ForeignKey(MeetingRequest, related_name='place_time_requests', on_delete=models.CASCADE)
     place = models.ForeignKey(Place, on_delete=models.CASCADE)
+    time = models.ForeignKey(TimeSlot, on_delete=models.CASCADE)
     requested_by = models.ForeignKey(User, on_delete=models.CASCADE)
     requested_at = models.DateTimeField(auto_now_add=True)
+    
