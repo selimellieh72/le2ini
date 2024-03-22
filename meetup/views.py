@@ -21,10 +21,16 @@ def reset_acceptance(meeting_request, user_id):
 class InterestListView(ListAPIView):
     queryset = Interest.objects.all()
     serializer_class = InterestSerializer
+   
 
 
 class CreateMeetingRequestView(APIView):
     permission_classes = [IsAuthenticated]
+    # get meeting by id
+    def get(self, request, meeting_id):
+        meeting = get_object_or_404(MeetingRequest, pk=meeting_id)
+        serializer = MeetingRequestSerializer(meeting)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, user_id):
         print({"request_from": request.user.pk, "request_to":user_id })
@@ -49,6 +55,9 @@ class RespondToMeetingRequestView(APIView):
                 meeting_request.status = 'waiting'
                 response_message = "Meeting request accepted. Awaiting further actions."
             elif meeting_request.status == 'waiting':
+                # First make sure we have TimePlaceRequests associated with the meeting request.
+                if meeting_request.place_time_requests.count() == 0:
+                    return Response({'message': 'Cannot accept without a time and place proposal.'}, status=status.HTTP_400_BAD_REQUEST)
                 # Check which user is accepting and mark their acceptance.
                 if request.user == meeting_request.request_from:
                     meeting_request.request_from_accepting = True
@@ -102,11 +111,11 @@ class PlaceTimeRequestView(APIView):
         if serializer.is_valid():
             
             reset_acceptance(meeting_request, request.user.pk)
-         
+            
             serializer.save()
            
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
+      
         return Response({'message': 'Invalid data.'}, status=status.HTTP_400_BAD_REQUEST)
        
 class MeetingRequestsForUserView(ListAPIView):

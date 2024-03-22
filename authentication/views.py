@@ -9,6 +9,8 @@ from django.utils import timezone
 from django.contrib.auth import authenticate
 from .utils import send_verification_email
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.db.models import Q
+
 
 class RegisterUserView(APIView):
     def post(self, request):
@@ -120,6 +122,13 @@ class LookupUsersView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        last_50_users = User.objects.order_by('-last_login')[:50]
+
+     
+
+        # add to exclude yourself too!
+        # exclude also those with no info
+        last_50_users =  User.objects.exclude(Q(meeting_requests_sent__request_to=request.user) | Q(meeting_requests_received__request_from=request.user) | Q(id=request.user.id) | Q(info__isnull=True)).order_by('-last_login')[:50]
         serializer = UserSerializer(last_50_users, many=True)
         return Response(serializer.data)
+    
+    

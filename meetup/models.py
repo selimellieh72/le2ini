@@ -20,9 +20,14 @@ class MeetingRequest(models.Model):
     ]
     request_from = models.ForeignKey(User, related_name='meeting_requests_sent', on_delete=models.CASCADE)
     request_to = models.ForeignKey(User, related_name='meeting_requests_received', on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('request_from', 'request_to')
+
     status = models.CharField(max_length=8, choices=STATUS_CHOICES, default='pending')
     request_from_accepting = models.BooleanField(default=False)
     request_to_accepting = models.BooleanField(default=False)
+    requested_at = models.DateTimeField(auto_now_add=True)
 
     
 class TimeSlot(models.Model):

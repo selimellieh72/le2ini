@@ -59,10 +59,15 @@ class MeetingRequestSerializer(serializers.ModelSerializer):
 
 
     place_time_requests = PlaceTimeRequestSerializer(many=True, read_only=True)
+
+ 
+
  
     class Meta:
         model = MeetingRequest
-        fields = ['id', 'request_from', 'request_to', 'status', 'place_time_requests', 'request_from_accepting', 'request_to_accepting']
+        fields = ['id', 'request_from', 'request_to', 'status', 'place_time_requests', 'request_from_accepting', 'request_to_accepting', 'requested_at']
+
+        ordering = ['-requested_at']
     def to_representation(self, instance):
         # Dynamically import the UserSerializer to avoid circular imports
         from authentication.serializers import UserSerializer  # Adjust the import path as necessary
