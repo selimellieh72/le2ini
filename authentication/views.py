@@ -41,6 +41,7 @@ class UserInfoView(APIView):
       
         # If no user_id is provided, default to the current user's UserInfo
         if user_id is None:
+            print(request.user.id)
             userinfo = get_object_or_404(UserInfo, user=request.user)
         else:
             # Fetch the UserInfo for the given user_id
