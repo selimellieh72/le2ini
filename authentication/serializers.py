@@ -31,7 +31,8 @@ class UserInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserInfo
-        fields = ['full_name', 'date_of_birth', 'occupation', 'biography', 'interests', 'interests_data']
+        fields = ['full_name', 'date_of_birth', 'occupation', 'biography', 'interests', 'interests_data',
+                  'loc_lat', 'loc_lon']
 
     def create(self, validated_data):
         interests_data = validated_data.pop('interests_data', [])

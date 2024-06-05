@@ -42,6 +42,7 @@ class UserInfo(models.Model):
     occupation = models.CharField(max_length=100, blank=True)
     biography = models.CharField(max_length =256, blank=True)
     interests = models.ManyToManyField('meetup.Interest', related_name='users', blank=True)
-
+    loc_lat = models.FloatField(blank=True, null=True)
+    loc_lon = models.FloatField(blank=True, null=True)
     def __str__(self):
         return self.user.email
