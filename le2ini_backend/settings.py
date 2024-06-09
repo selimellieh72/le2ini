@@ -159,3 +159,5 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'selim.cod4r@gmail.com'  
 EMAIL_HOST_PASSWORD = 'ovym zvnn cjwr okkf'
+
+from .local_settings import *

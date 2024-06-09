@@ -27,6 +27,25 @@ class RegisterUserView(APIView):
             return Response({"message": "Email already taken."}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"message": "Email or password incorrect. Try again later."}, status=status.HTTP_400_BAD_REQUEST)
 
+class ResendVerificationCodeView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"message": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        # Check if the password is correct
+        if user.check_password(password):
+            if not user.is_active:
+                if not send_verification_email(user):
+                    return Response({"message": "Check your email for the verification code."})
+                else:
+                    return Response({"message": "Sent another verification code email."})
+            else:
+                return Response({"message": "User is already verified."}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"message": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
 class LoginUserView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         email = request.data.get('email')
