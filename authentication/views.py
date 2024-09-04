@@ -9,7 +9,9 @@ from django.utils import timezone
 from django.contrib.auth import authenticate
 from .utils import send_verification_email
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.db.models import Q
+
 
 
 
