@@ -10,3 +10,7 @@ Steps to run:
 4. ```
     ./scripts.sh createsuperuser
     ```
+5. 
+```
+    ./scripts.sh seed
+```
