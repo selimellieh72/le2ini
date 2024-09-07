@@ -214,3 +214,16 @@ class ForgotPasswordView(APIView):
             return Response({"message": "Verification code is correct. Updated password successfully."})
         else:
             return Response({"message": "Verification code has expired."}, status=status.HTTP_400_BAD_REQUEST)
+        
+class CheckOtpValidityView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        code = request.data.get('code')
+        try:
+            user = User.objects.get(email=email, verification_code=code)
+        except User.DoesNotExist:
+            return Response({"message": "Invalid email or verification code."}, status=status.HTTP_400_BAD_REQUEST)
+        if timezone.now() - user.code_sent_at <= timezone.timedelta(minutes=30):  # 30 minutes validity
+            return Response({"message": "Verification code is correct."})
+        else:
+            return Response({"message": "Verification code has expired."}, status=status.HTTP_400_BAD_REQUEST)
