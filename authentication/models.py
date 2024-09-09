@@ -44,5 +44,6 @@ class UserInfo(models.Model):
     interests = models.ManyToManyField('meetup.Interest', related_name='users', blank=True)
     loc_lat = models.FloatField(blank=True, null=True)
     loc_lon = models.FloatField(blank=True, null=True)
+    city = models.ForeignKey('meetup.City', on_delete=models.SET_NULL, related_name='users', blank=True, null=True)
     def __str__(self):
         return self.user.email
