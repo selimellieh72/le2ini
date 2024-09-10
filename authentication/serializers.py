@@ -1,6 +1,5 @@
 from meetup.serializers import InterestSerializer
-from .models import User, UserInfo
-from meetup.models import Interest
+from .models import User, UserInfo, Avatar
 from rest_framework import serializers
 from rest_framework.fields import ListField
 
@@ -54,3 +53,8 @@ class UserInfoSerializer(serializers.ModelSerializer):
             instance.interests.add(interest)
         return instance
 
+
+class AvatarSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Avatar
+        fields = ['id', 'image', ]

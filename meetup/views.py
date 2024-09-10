@@ -4,7 +4,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import MeetingRequest, TimeSlot, PlaceTimeRequest, Interest
-from .serializers import MeetingRequestSerializer, PlaceTimeRequestSerializer,InterestSerializer
+from .serializers import  MeetingRequestSerializer, PlaceTimeRequestSerializer,InterestSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
@@ -195,3 +195,4 @@ class MeetingRequestsForUserView(ListAPIView):
     def get_queryset(self):
         # Return meeting requests where the authenticated user is the target
         return MeetingRequest.objects.filter(Q(request_to=self.request.user) | Q(request_from=self.request.user)).prefetch_related('place_time_requests')
+    

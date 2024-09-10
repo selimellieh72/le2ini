@@ -1,10 +1,11 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.shortcuts import get_object_or_404
-from .models import User, UserInfo
-from .serializers import UserSerializer, UserInfoSerializer
+from .models import Avatar, User, UserInfo
+from .serializers import AvatarSerializer, UserSerializer, UserInfoSerializer
 from django.utils import timezone
 from django.contrib.auth import authenticate
 from .utils import send_verification_email
@@ -227,3 +228,8 @@ class CheckOtpValidityView(APIView):
             return Response({"message": "Verification code is correct."})
         else:
             return Response({"message": "Verification code has expired."}, status=status.HTTP_400_BAD_REQUEST)
+        
+class AvatarListView(ListAPIView):
+    permission_classes = [AllowAny]
+    queryset = Avatar.objects.all()
+    serializer_class = AvatarSerializer

@@ -4,3 +4,4 @@ psycopg2
 djangorestframework-simplejwt
 geopy
 python-dotenv
+Pillow

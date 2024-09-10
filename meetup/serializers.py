@@ -84,3 +84,4 @@ class MeetingRequestSerializer(serializers.ModelSerializer):
     def to_internal_value(self, data):
         # This ensures that for write operations, the expected format is a PK
         return super().to_internal_value(data)    
+    

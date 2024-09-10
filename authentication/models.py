@@ -47,3 +47,11 @@ class UserInfo(models.Model):
     city = models.ForeignKey('meetup.City', on_delete=models.SET_NULL, related_name='users', blank=True, null=True)
     def __str__(self):
         return self.user.email
+    
+
+
+class Avatar(models.Model):
+    image = models.ImageField(upload_to='avatars/')
+
+    def __str__(self):
+        return f'Avatar {self.id}'

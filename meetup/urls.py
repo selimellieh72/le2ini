@@ -29,5 +29,6 @@ urlpatterns = [
     path('meeting-requests/<int:meeting_request_id>/', MeetingRequestDetailView.as_view(), name='meeting-request-detail'),
       # Place Request
     path('meeting-requests/<int:meeting_request_id>/place-time-requests/', PlaceTimeRequestView.as_view(), name='time-place-request'),
+    
 ]
     
