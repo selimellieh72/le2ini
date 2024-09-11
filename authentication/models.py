@@ -45,13 +45,14 @@ class UserInfo(models.Model):
     loc_lat = models.FloatField(blank=True, null=True)
     loc_lon = models.FloatField(blank=True, null=True)
     city = models.ForeignKey('meetup.City', on_delete=models.SET_NULL, related_name='users', blank=True, null=True)
+    avatar = models.ForeignKey('Avatar', on_delete=models.SET_NULL, related_name='users', blank=True, null=True)
     def __str__(self):
         return self.user.email
     
 
 
 class Avatar(models.Model):
-    image = models.ImageField(upload_to='avatars/')
+    image_url = models.URLField()
 
     def __str__(self):
         return f'Avatar {self.id}'

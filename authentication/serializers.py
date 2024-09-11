@@ -1,3 +1,4 @@
+from meetup.models import Interest
 from meetup.serializers import InterestSerializer
 from .models import User, UserInfo, Avatar
 from rest_framework import serializers
@@ -31,7 +32,7 @@ class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserInfo
         fields = ['full_name', 'date_of_birth', 'occupation', 'biography', 'interests', 'interests_data',
-                  'loc_lat', 'loc_lon']
+                'loc_lat', 'loc_lon', 'city', 'avatar']
 
     def create(self, validated_data):
         interests_data = validated_data.pop('interests_data', [])
@@ -57,4 +58,4 @@ class UserInfoSerializer(serializers.ModelSerializer):
 class AvatarSerializer(serializers.ModelSerializer):
     class Meta:
         model = Avatar
-        fields = ['id', 'image', ]
+        fields = ['id', 'image_url' ]
