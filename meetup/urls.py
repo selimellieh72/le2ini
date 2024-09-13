@@ -1,8 +1,10 @@
 from django.urls import path
 from .views import (
+    CityListView,
     ForYouLookupUsersView,
     InterestListView,
     CreateMeetingRequestView,
+    LookupInSameCityView,
     NearbyLookupUsersView,
     RespondToMeetingRequestView,
    PlaceTimeRequestView,
@@ -15,6 +17,7 @@ urlpatterns = [
     path('interests/', InterestListView.as_view(), name='interest-list'),
     path('for-you-lookup/', ForYouLookupUsersView.as_view(), name='for-you-lookup'),
     path('nearby-lookup/', NearbyLookupUsersView.as_view(), name='nearby-lookup'),
+    path('cities-lookup/', LookupInSameCityView.as_view(), name='city-lookup'),
     # Create Meeting Request
     path('meeting-requests/create/<int:user_id>/', CreateMeetingRequestView.as_view(), name='create-meeting-request'),
     
@@ -29,6 +32,7 @@ urlpatterns = [
     path('meeting-requests/<int:meeting_request_id>/', MeetingRequestDetailView.as_view(), name='meeting-request-detail'),
       # Place Request
     path('meeting-requests/<int:meeting_request_id>/place-time-requests/', PlaceTimeRequestView.as_view(), name='time-place-request'),
+    path('cities/', CityListView.as_view(), name='city-list'),
     
 ]
     

@@ -3,9 +3,9 @@ from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import MeetingRequest, TimeSlot, PlaceTimeRequest, Interest
-from .serializers import  MeetingRequestSerializer, PlaceTimeRequestSerializer,InterestSerializer
-from rest_framework.permissions import IsAuthenticated
+from .models import City, MeetingRequest, TimeSlot, PlaceTimeRequest, Interest
+from .serializers import  CitySerializer, MeetingRequestSerializer, PlaceTimeRequestSerializer,InterestSerializer
+from rest_framework.permissions import IsAuthenticated,AllowAny
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.contrib.auth import get_user_model
@@ -44,13 +44,14 @@ class ForYouLookupUsersView(ListAPIView):
 
         # Prefetch interests directly on the User model
         users = User.objects.exclude(id=current_user.id,
+                                  
                                 
         ).prefetch_related(
           'info'
         )
 
         # Annotate users with the number of common interests
-        users_with_similarity = users.annotate(
+        users_with_similarity = users.filter(is_active=True).annotate(
             similarity_score=Count(
                 'info__interests',
                 filter=Q(info__interests__in=current_user_interests)
@@ -87,13 +88,34 @@ class NearbyLookupUsersView(ListAPIView):
         distance_raw_sql = RawSQL(haversine, (current_lat, current_lon, current_lat))
 
         # Filter users within the delta distance and exclude the current user
-        nearby_users = User.objects.exclude(id=current_user.id).filter(
+        nearby_users = User.objects.exclude(id=current_user.id).filter( 
             info__isnull=False,
             info__loc_lat__isnull=False,
             info__loc_lon__isnull=False,
+            is_active=True,
         ).annotate(distance=distance_raw_sql).filter(distance__lte=delta).order_by('distance')
 
         return nearby_users
+class LookupInSameCityView(ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        User = get_user_model()
+        current_user = self.request.user
+        current_user_info = current_user.info
+
+        if current_user_info.city is None:
+            return User.objects.none()
+    
+
+        # Filter users in the same city and exclude the current user
+        users_in_same_city = User.objects.exclude(id=current_user.id).filter(
+            info__city=current_user_info.city,
+            is_active=True,
+        )
+
+        return users_in_same_city
 class CreateMeetingRequestView(APIView):
     permission_classes = [IsAuthenticated]
     # get meeting by id
@@ -195,4 +217,10 @@ class MeetingRequestsForUserView(ListAPIView):
     def get_queryset(self):
         # Return meeting requests where the authenticated user is the target
         return MeetingRequest.objects.filter(Q(request_to=self.request.user) | Q(request_from=self.request.user)).prefetch_related('place_time_requests')
+    
+
+class CityListView(ListAPIView):
+    permission_classes = [AllowAny]
+    queryset = City.objects.all()
+    serializer_class = CitySerializer
     

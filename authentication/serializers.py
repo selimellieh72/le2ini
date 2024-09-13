@@ -1,5 +1,5 @@
-from meetup.models import Interest
-from meetup.serializers import InterestSerializer
+from meetup.models import Interest, City
+from meetup.serializers import InterestSerializer, CitySerializer
 from .models import User, UserInfo, Avatar
 from rest_framework import serializers
 from rest_framework.fields import ListField
@@ -10,7 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ( 'id', 'email', 'password', 'user_info')
+        fields = ( 'id', 'email', 'password', 'user_info', 'is_active')
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
@@ -23,16 +23,30 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 
+class AvatarSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Avatar
+        fields = ['id', 'image_url' ]
+
 class UserInfoSerializer(serializers.ModelSerializer):
     interests = InterestSerializer(many=True, read_only=True)
     interests_data = ListField(child=serializers.DictField(), write_only=True, required=False)
+    city = CitySerializer()
+    avatar = AvatarSerializer()
+    # Use PrimaryKeyRelatedField for write operations
+    avatar_id = serializers.PrimaryKeyRelatedField(queryset=Avatar.objects.all(), source='avatar', write_only=True, required=False)
+    city_id = serializers.PrimaryKeyRelatedField(queryset=City.objects.all(), source='city', write_only=True, required=False)
+    
+    # Use custom serializers for read operations
+    avatar = AvatarSerializer(read_only=True)
+    city = CitySerializer(read_only=True)
     
 
 
     class Meta:
         model = UserInfo
         fields = ['full_name', 'date_of_birth', 'occupation', 'biography', 'interests', 'interests_data',
-                'loc_lat', 'loc_lon', 'city', 'avatar']
+                'loc_lat', 'loc_lon', 'city', 'avatar', 'avatar_id', 'city_id']
 
     def create(self, validated_data):
         interests_data = validated_data.pop('interests_data', [])
@@ -54,8 +68,3 @@ class UserInfoSerializer(serializers.ModelSerializer):
             instance.interests.add(interest)
         return instance
 
-
-class AvatarSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Avatar
-        fields = ['id', 'image_url' ]

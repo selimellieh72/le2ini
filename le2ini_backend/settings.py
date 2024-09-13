@@ -173,12 +173,14 @@ REST_FRAMEWORK = {
 }
 AUTH_USER_MODEL = "authentication.User"
 
-# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_HOST_USER = "test@test.com"
 
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST='smtp.mailersend.net'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", default="")
-EMAIL_HOST_PASSWORD=os.getenv("EMAIL_HOST_PASSWORD", default="")
+
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST='smtp.mailersend.net'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", default="")
+# EMAIL_HOST_PASSWORD=os.getenv("EMAIL_HOST_PASSWORD", default="")

@@ -1,4 +1,4 @@
-from .models import MeetingRequest, TimeSlot, Place, Interest, PlaceTimeRequest
+from .models import City, MeetingRequest, TimeSlot, Place, Interest, PlaceTimeRequest
 from authentication.models import User
 
 from rest_framework import serializers
@@ -85,3 +85,8 @@ class MeetingRequestSerializer(serializers.ModelSerializer):
         # This ensures that for write operations, the expected format is a PK
         return super().to_internal_value(data)    
     
+class CitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = City
+        fields = ['id', 'name']
+        
