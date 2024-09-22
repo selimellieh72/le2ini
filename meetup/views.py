@@ -109,9 +109,10 @@ class LookupInSameCityView(ListAPIView):
             return User.objects.none()
     
 
+        city_pk = self.request.query_params.get('city', current_user_info.city.pk)
         # Filter users in the same city and exclude the current user
         users_in_same_city = User.objects.exclude(id=current_user.id).filter(
-            info__city=current_user_info.city,
+            info__city__pk=city_pk,
             is_active=True,
         )
 
