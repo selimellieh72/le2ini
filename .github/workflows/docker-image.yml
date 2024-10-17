@@ -33,6 +33,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "my-django-app.tar"
           target: "~/"
+          debug: true
 
       - name: Deploy on server
         uses: appleboy/ssh-action@master
