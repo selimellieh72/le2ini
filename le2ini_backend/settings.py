@@ -40,7 +40,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure--c*(7^8b$t1mt_m67t)g$_8t5h*1t3oft%1xb8l_sq*t(k4%tn'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', '1') == '1'
 
 ALLOWED_HOSTS = ['*']
 
@@ -173,14 +173,14 @@ REST_FRAMEWORK = {
 }
 AUTH_USER_MODEL = "authentication.User"
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-EMAIL_HOST_USER = "test@test.com"
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# EMAIL_HOST_USER = "test@test.com"
 
 
 
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST='smtp.mailersend.net'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", default="")
-# EMAIL_HOST_PASSWORD=os.getenv("EMAIL_HOST_PASSWORD", default="")
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST='smtp.mailersend.net'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD=os.getenv("EMAIL_HOST_PASSWORD", default="")
