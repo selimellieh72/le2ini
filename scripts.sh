@@ -16,4 +16,8 @@ function seed() {
   docker compose run --rm web python manage.py seed_interests && docker compose run --rm web python manage.py seed_cities && docker compose run --rm web python manage.py seed_avatars
 }
 
+function collectStatic() {
+  docker compose run --rm web python manage.py collectstatic --noinput 
+}
+
 "$@"
