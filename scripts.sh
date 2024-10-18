@@ -17,7 +17,7 @@ function seed() {
 }
 
 function collectStatic() {
-  docker compose run --rm web python manage.py collectstatic --noinput 
+   docker compose run --rm web python manage.py collectstatic --noinput
 }
 
 "$@"

@@ -49,3 +49,5 @@ jobs:
             docker load -i ~/le2ini-app.tar
             docker compose -f docker-compose.prod.yml down
             docker compose -f docker-compose.prod.yml up -d
+            ./scripts.sh migrate
+            ./scripts.sh collectStatic

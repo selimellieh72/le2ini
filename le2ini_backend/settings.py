@@ -21,10 +21,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
-]
-STATIC_URL = '/static/'
+
 
 # Load environment variables from .env file
 load_dotenv()
@@ -41,6 +38,13 @@ SECRET_KEY = 'django-insecure--c*(7^8b$t1mt_m67t)g$_8t5h*1t3oft%1xb8l_sq*t(k4%tn
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', '1') == '1'
+if DEBUG:
+    STATICFILES_DIRS = [
+        os.path.join(BASE_DIR, 'static'),  # Your custom static files
+    ]
+else:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = '/static/'
 
 ALLOWED_HOSTS = ['*']
 
