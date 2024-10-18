@@ -46,6 +46,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/le2ini
+            git pull
             docker load -i ~/le2ini-app.tar
             docker compose -f docker-compose.prod.yml down
             docker compose -f docker-compose.prod.yml up -d
