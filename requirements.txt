@@ -6,3 +6,4 @@ geopy
 python-dotenv
 Pillow
 mailersend
+gunicorn
