@@ -2,13 +2,12 @@ version: "3"
 
 services:
   web:
-    build:
-      context: .
-    command: gunicorn my_django_project.wsgi:application --bind 0.0.0.0:8000
+    image: le2ini-app:latest
+    command: gunicorn le2ini_backend.wsgi:application --bind 0.0.0.0:8000
     env_file:
       - .env
     expose:
-      - "8000" # Internal port for Gunicorn
+      - "8000"
     depends_on:
       - db
 
@@ -29,6 +28,7 @@ services:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./static:/usr/share/nginx/html/static
     depends_on:
       - web
     environment:
