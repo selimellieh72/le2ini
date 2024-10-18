@@ -47,5 +47,5 @@ jobs:
           script: |
             cd ~/le2ini
             docker load -i ~/le2ini-app.tar
-            docker-compose -f docker-compose.prod.yml down
-            docker-compose -f docker-compose.prod.yml up -d
+            docker compose -f docker-compose.prod.yml down
+            docker compose -f docker-compose.prod.yml up -d
