@@ -22,4 +22,4 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # Step 8: Run the command to start the app
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["gunicorn", "le2ini_backend.wsgi:application", "--bind", "0.0.0.0:8000"]
