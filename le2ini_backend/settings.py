@@ -122,7 +122,7 @@ WSGI_APPLICATION = 'le2ini_backend.wsgi.application'
 POSTGRES_DB = os.getenv('POSTGRES_DB')
 POSTGRES_USER = os.getenv('POSTGRES_USER')
 POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
-POSTGRES_HOST = 'db' if os.getenv('DEBUG', '1') == '1' else os.getenv('POSTGRES_HOST')
+POSTGRES_HOST = os.getenv('POSTGRES_HOST', 'db')  
 
 # Set up the database configuration
 DATABASES = {
