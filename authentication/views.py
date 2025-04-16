@@ -25,6 +25,7 @@ class RegisterUserView(APIView):
             send_verification_email(user)
             return Response({"user": serializer.data,  "message": "Check your email for the verification code."}, status=status.HTTP_201_CREATED)
         
+        
         # Check if the email is already taken
         if 'email' in serializer.errors:
             return Response({"message": "Email already taken."}, status=status.HTTP_400_BAD_REQUEST)

@@ -2,7 +2,7 @@ version: "3"
 
 services:
   db:
-    image: postgres:13
+    image: postgres:14
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -14,19 +14,18 @@ services:
 
   web:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    command: ./wait-for-it.sh db:5432 --timeout=30 -- python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
     ports:
       - "8000:8000"
     depends_on:
       - db
+
     environment:
-      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
-      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
       DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL}
-      DEFAULT_FROM_USER: ${DEFAULT_FROM_USER}
-      MAILERSEND_API_KEY: ${MAILERSEND_API_KEY}
+      DEFAULT_FROM_USER: ${DEFAULT_FROM_USER}`
+      BREVO_API_KEY: ${BREVO_API_KEY}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
