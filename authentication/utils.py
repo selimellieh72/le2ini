@@ -1,6 +1,7 @@
 import random
 import os
 import string
+from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
 
@@ -22,20 +23,20 @@ def send_verification_email(user):
     user.code_sent_at = timezone.now()
     user.save()
 
-    # Setup Brevo API config
+    if getattr(settings, 'DEBUG', False):
+        print(f"[DEBUG] Verification code for {user.email}: {user.verification_code}")
+        return return_value 
+
     configuration = sib_api_v3_sdk.Configuration()
     configuration.api_key['api-key'] = os.getenv("BREVO_API_KEY")
     api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
 
-    # Prepare template-based email
     send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
         to=[{
             "email": user.email,
- 
         }],
         template_id=int(os.getenv("BREVO_TEMPLATE_ID")),
         params={
-      
             "code": user.verification_code,
         },
         sender={

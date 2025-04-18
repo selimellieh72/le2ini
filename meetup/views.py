@@ -42,15 +42,27 @@ class ForYouLookupUsersView(ListAPIView):
         current_user_info = current_user.info
         current_user_interests = current_user_info.interests.all().values_list('id', flat=True)
 
-        # Prefetch interests directly on the User model
-        users = User.objects.exclude(id=current_user.id,
-                                  
-                                
-        ).prefetch_related(
-          'info'
-        )
+        # Get users we've already sent or received meeting requests with
+        requested_user_ids = MeetingRequest.objects.filter(
+            Q(request_from=current_user) | Q(request_to=current_user)
+        ).values_list('request_from', 'request_to')
 
-        # Annotate users with the number of common interests
+        # Flatten the tuple list and remove current user
+        exclude_ids = set()
+        for from_id, to_id in requested_user_ids:
+            if from_id != current_user.id:
+                exclude_ids.add(from_id)
+            if to_id != current_user.id:
+                exclude_ids.add(to_id)
+
+        # Prefetch interests and filter
+        users = User.objects.exclude(
+            id__in=exclude_ids
+        ).exclude(
+            id=current_user.id
+        ).prefetch_related('info')
+
+        # Annotate users with similarity score
         users_with_similarity = users.filter(is_active=True).annotate(
             similarity_score=Count(
                 'info__interests',
@@ -59,7 +71,6 @@ class ForYouLookupUsersView(ListAPIView):
         ).order_by('-similarity_score')
 
         return users_with_similarity
-    
 class NearbyLookupUsersView(ListAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
@@ -76,6 +87,19 @@ class NearbyLookupUsersView(ListAPIView):
         current_lat = current_user_info.loc_lat
         current_lon = current_user_info.loc_lon
 
+        # Get users we've already interacted with via a meeting request
+        requested_user_ids = MeetingRequest.objects.filter(
+            Q(request_from=current_user) | Q(request_to=current_user)
+        ).values_list('request_from', 'request_to')
+
+        # Build exclusion set
+        exclude_ids = set()
+        for from_id, to_id in requested_user_ids:
+            if from_id != current_user.id:
+                exclude_ids.add(from_id)
+            if to_id != current_user.id:
+                exclude_ids.add(to_id)
+
         # Haversine formula to calculate distance
         haversine = """
         6371 * acos(
@@ -87,13 +111,20 @@ class NearbyLookupUsersView(ListAPIView):
 
         distance_raw_sql = RawSQL(haversine, (current_lat, current_lon, current_lat))
 
-        # Filter users within the delta distance and exclude the current user
-        nearby_users = User.objects.exclude(id=current_user.id).filter( 
+        nearby_users = User.objects.exclude(
+            id=current_user.id
+        ).exclude(
+            id__in=exclude_ids
+        ).filter(
             info__isnull=False,
             info__loc_lat__isnull=False,
             info__loc_lon__isnull=False,
             is_active=True,
-        ).annotate(distance=distance_raw_sql).filter(distance__lte=delta).order_by('distance')
+        ).annotate(
+            distance=distance_raw_sql
+        ).filter(
+            distance__lte=delta
+        ).order_by('distance')
 
         return nearby_users
 class LookupInSameCityView(ListAPIView):
