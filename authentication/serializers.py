@@ -57,14 +57,14 @@ class UserInfoSerializer(serializers.ModelSerializer):
         return user_info
 
     def update(self, instance, validated_data):
-        interests_data = validated_data.pop('interests_data', [])
+        interests_data = validated_data.pop('interests_data', None)
         instance = super().update(instance, validated_data)
         print(validated_data)
 
-        # Clear existing interests and add the new ones
-        instance.interests.clear()
-        for interest_data in interests_data:
-            interest, _ = Interest.objects.get_or_create(**interest_data)
-            instance.interests.add(interest)
+        if interests_data:
+            instance.interests.clear()
+            for interest_data in interests_data:
+                interest, _ = Interest.objects.get_or_create(**interest_data)
+                instance.interests.add(interest)
+        
         return instance
-
